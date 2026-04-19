@@ -31,6 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
    //remove password and refresh token field from response
    //check for user creation
    //return response
+
    console.log("Files : ", req.files);
    console.log("BODY : ", req.body);
    const { fullname, email, username, password } = req.body;
@@ -129,6 +130,56 @@ const loginUser = asyncHandler(async (req, res) => {
 
    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
+   const loggedinUser = await User.findById(user._id).select("-password -refreshToken");
+
+   const options = {
+      httpOnly : true,
+      secure : true
+   }
+
+   return res
+   .status(200)
+   .cookie("accessToken",accessToken, options).cookie
+   .cookie("refreshToken", refreshToken, options)
+   .json(
+      new ApiResponse(
+         200,
+         {
+            user : loggedinUser, accessToken, refreshToken
+         },
+         "User logged in Successfully"
+      )
+   )
+
 })
 
-export { registerUser, }
+const logoutUser = asyncHandler (async(req, res) => {
+   await User.findByIdAndUpdate(
+      req.user._id,
+      {
+         $set: {
+            refreshToken : undefined
+         }
+      },
+      {
+         new : true
+      }
+   )
+
+   const options = {
+      httpOnly : true,
+      secure : true
+   }
+
+   return res
+   .status(200)
+   .clearCookie("accessToken", options)
+   .clearCookie("refreshToken",options)
+   .json(new ApiResponse(200, {}, "user logged out succesfully"))
+})
+
+export { 
+   registerUser, 
+   loginUser,
+   logoutUser
+}
