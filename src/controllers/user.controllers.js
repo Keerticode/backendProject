@@ -114,7 +114,7 @@ const loginUser = asyncHandler(async (req, res) => {
    const { email, username, password } = req.body
    console.log(email);
 
-   if (!(username || !email)) {
+   if (!username || !email) {
       throw new ApiError(400, "username or email is required")
    }
 
@@ -142,8 +142,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, options)     //Stores the access token in the browser as a cookie.
+      .cookie("refreshToken", refreshToken, options)   //Stores the refresh token in another cookie,Stores the refresh token in another cookie.
       .json(
          new ApiResponse(
             200,
@@ -153,7 +153,6 @@ const loginUser = asyncHandler(async (req, res) => {
             "User logged in Successfully"
          )
       )
-
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -228,7 +227,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
    }
 
 })
-
 
 export {
    registerUser,
